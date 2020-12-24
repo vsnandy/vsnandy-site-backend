@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const projects = require('./routes/projects');
 const football = require('./routes/football');
 
 const app = express();
@@ -18,7 +17,6 @@ dotenv.config();
 const port = process.env.PORT || 8000;
 
 // setup api endpoints for use by app server
-app.use('/projects', projects.router);
 app.use('/football', football.router);
 
 app.listen(port, () => {
