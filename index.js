@@ -7,7 +7,7 @@ const app = express();
 
 // set cors
 app.use(cors({
-  origin: ['https://vsnandy.github.io', 'http://localhost:3000']
+  origin: ['https://vsnandy.github.io', 'http://localhost:3000', 'http://localhost:8000']
 }));
 
 dotenv.config();
