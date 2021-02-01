@@ -17,7 +17,7 @@ dotenv.config();
 
 
 // set the port
-const port = process.env.PORT || 8000;
+const port = process.env.PORT || 3000;
 
 // setup api endpoints for use by app server
 app.use('/football', football.router);
