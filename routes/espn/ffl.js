@@ -32,38 +32,53 @@ axios.defaults.withCredentials = true;
 axios.defaults.headers = options;
 
 // Get the League Settings
-router.get('/league/:leagueId/season/:seasonId/settings', async (req, res, next) => {
-  await leagueController.getLeagueSettings(req, res, next)
+router.get('/league/:leagueId/season/:seasonId/settings', (req, res, next) => {
+  leagueController.getLeagueSettings(req, res, next)
 });
 
 // Gets the teams & their basic info (no roster)
-router.get('/league/:leagueId/season/:seasonId/teams', async (req, res, next) => {
-  await leagueController.getTeams(req, res, next);
+router.get('/league/:leagueId/season/:seasonId/teams', (req, res, next) => {
+  leagueController.getTeams(req, res, next);
 });
 
 // Get weekly matchup data (points by team and roster)
-router.get('/league/:leagueId/season/:seasonId/scoringPeriod/:scoringPeriodId/matchupPeriod/:matchupPeriodId', async (req, res, next) => {
-  await leagueController.getMatchupsForWeek(req, res, next);
+router.get('/league/:leagueId/season/:seasonId/scoringPeriod/:scoringPeriodId/matchupPeriod/:matchupPeriodId', (req, res, next) => {
+  leagueController.getMatchupsForWeek(req, res, next);
 });
 
 // Get a specific team's points by week
-router.get('/league/:leagueId/season/:seasonId/scoringPeriod/:scoringPeriodId/team/:teamId', async (req, res, next) => {
-  await leagueController.getTeamForWeek(req, res, next);
+router.get('/league/:leagueId/season/:seasonId/scoringPeriod/:scoringPeriodId/team/:teamId', (req, res, next) => {
+  leagueController.getTeamForWeek(req, res, next);
 });
 
 // Get the boxscores for each week and detailed roster scores for specified scoring period
-router.get('/league/:leagueId/season/:seasonId/scoringPeriod/:scoringPeriodId/boxscores', async (req, res, next) => {
-  await leagueController.getBoxscoresForWeek(req, res, next);
+router.get('/league/:leagueId/season/:seasonId/scoringPeriod/:scoringPeriodId/boxscores', (req, res, next) => {
+  leagueController.getBoxscoresForWeek(req, res, next);
 });
 
 // Get the matchups and scores by week (no roster or team details)
-router.get('/league/:leagueId/season/:seasonId/scores', async (req, res, next) => {
-  await leagueController.getAllScores(req, res, next);
+router.get('/league/:leagueId/season/:seasonId/scores', (req, res, next) => {
+  leagueController.getAllScores(req, res, next);
+});
+
+// Get all players for league and season
+router.get('/season/:seasonId/players', (req, res, next) => {
+  leagueController.getAllPlayers(req, res, next);
+});
+
+// Get simple player info for given player
+router.get('/season/:seasonId/player/:playerName', (req, res, next) => {
+  leagueController.getPlayerInfoByName(req, res, next);
+});
+
+// Get a player by name for a given week
+router.get('/league/:leagueId/season/:seasonId/scoringPeriod/:scoringPeriodId/player/:playerName', (req, res, next) => {
+  leagueController.getPlayerStatsForWeek(req, res, next);
 });
 
 // Try getting ESPN Constants via web scrape
-router.get('/web-constants', async (req, res, next) => {
-  await leagueController.getConstants(req, res, next);
+router.get('/web-constants', (req, res, next) => {
+  leagueController.getConstants(req, res, next);
 });
 
 exports.router = router;

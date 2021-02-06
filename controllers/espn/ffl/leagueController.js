@@ -61,7 +61,7 @@ exports.getMatchupsForWeek = async (req, res, next) => {
 
 // Get roster and points for specific team at week
 exports.getTeamForWeek = async (req, res, next) => {
-  let { leagueId, seasonId, teamId, scoringPeriodId } = req.params;
+  const { leagueId, seasonId, teamId, scoringPeriodId } = req.params;
   
   try {
     // Call service
@@ -78,7 +78,7 @@ exports.getTeamForWeek = async (req, res, next) => {
 
 // Get boxscore by week and roster details for given scoring period
 exports.getBoxscoresForWeek = async (req, res, next) => {
-  let { leagueId, seasonId, scoringPeriodId } = req.params;
+  const { leagueId, seasonId, scoringPeriodId } = req.params;
 
   try {
     // Call service
@@ -95,7 +95,7 @@ exports.getBoxscoresForWeek = async (req, res, next) => {
 
 // Get the matchups and scores by week (no roster or team details)
 exports.getAllScores = async (req, res, next) => {
-  let { leagueId, seasonId } = req.params;
+  const { leagueId, seasonId } = req.params;
 
   try {
     // Call service
@@ -103,6 +103,58 @@ exports.getAllScores = async (req, res, next) => {
 
     res.status(200).json({
       data: scores
+    });
+    next();
+  } catch (err) {
+    next(err);
+  }
+}
+
+// Get all players
+exports.getAllPlayers = async (req, res, next) => {
+  const { seasonId } = req.params;
+
+  try {
+    const players = await leagueService.getAllPlayers(seasonId);
+
+    res.status(200).json({
+      data: players
+    });
+    next();
+  } catch (err) {
+    next(err);
+  }
+}
+
+// Get simple player info for given player and given season
+exports.getPlayerInfoByName = async (req, res, next) => {
+  const { seasonId, playerName } = req.params;
+
+  try {
+    const playerInfo = await leagueService.getPlayerInfoByName(seasonId, playerName);
+
+    res.status(200).json({
+      data: playerInfo
+    });
+    next();
+  } catch (err) {
+    next(err);
+  }
+}
+
+// Get player by name for given week
+exports.getPlayerStatsForWeek = async (req, res, next) => {
+  const { leagueId, seasonId, scoringPeriodId, playerName } = req.params;
+
+  try {
+    // Call service to get Player ID
+    const playerInfo = await leagueService.getPlayerInfoByName(seasonId, playerName);
+    const playerId = playerInfo[0].id; // for now use the first player found
+    console.log("Player ID found: " + playerId);
+    const playerStats = await leagueService.getPlayerStatsForWeek(leagueId, seasonId, scoringPeriodId, playerId);
+
+    res.status(200).json({
+      data: playerStats
     });
     next();
   } catch (err) {

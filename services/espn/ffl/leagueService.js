@@ -132,6 +132,76 @@ exports.getAllScores = async (leagueId, seasonId) => {
   }
 }
 
+// Get all active players for league and season
+const getAllPlayers = async (seasonId) => {
+  try {
+    const moreOptions = {
+      headers: {
+        ...options.headers,
+        "x-fantasy-filter": JSON.stringify({
+          "filterActive": {
+            "value": true
+          }
+        })
+      }
+    };
+
+    //console.log(moreOptions);
+
+    const response = await axios.get(`https://fantasy.espn.com/apis/v3/games/ffl/seasons/${seasonId}/players?view=players_wl`, moreOptions);
+
+    console.log("Total Players: " + response.data.length);
+    return response.data;
+  } catch (err) {
+    throw new ErrorHandler(400, 'Unable to get all players');
+  }
+}
+
+exports.getAllPlayers = getAllPlayers;
+
+// Get a player's info for season  by their name
+exports.getPlayerInfoByName = async (seasonId, playerName) => {
+  try {
+    // first grab all players and then filter
+    console.log("Player to find: " + playerName);
+    const allPlayers = await getAllPlayers(seasonId);
+    const players = allPlayers.filter(p => p.fullName === playerName);
+    console.log("Players found: " + players.length);
+    return players;
+  } catch (err) {
+    throw new ErrorHandler(400, `Unable to get ${playerName}`);
+  }
+}
+
+// Get a player's stats for given week, season, and league
+exports.getPlayerStatsForWeek = async (leagueId, seasonId, scoringPeriodId, playerId) => {
+  try {
+    const moreOptions = {
+      headers: {
+        ...options.headers,
+        "x-fantasy-filter": JSON.stringify({
+          "players": {
+            "filterIds": {
+              "value": [playerId]
+            },
+            "filterStatsForTopScoringPeriodIds": {
+              "value": 16,
+              "additionalValue": [`00${seasonId}`, `10${seasonId}`]
+            }
+          }
+        })
+      }
+    };
+
+    const path = getFflPath(leagueId, seasonId);
+    const response = await axios.get(`${path}?view=kona_playercard`, moreOptions);
+
+    return response.data;
+  } catch (err) {
+    throw new ErrorHandler(400, `Unable to get stats for player: ${playerId}`);
+  }
+}
+
 // Get ESPN FFL constants via web-scrape
 exports.getConstants = async () => {
   try {
