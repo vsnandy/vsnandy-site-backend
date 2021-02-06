@@ -162,6 +162,30 @@ exports.getPlayerStatsForWeek = async (req, res, next) => {
   }
 }
 
+// Get top scorers for a given week
+exports.getTopScorersForWeek = async (req, res, next) => {
+  const { leagueId, seasonId, scoringPeriodId, position } = req.params;
+
+  try {
+    const lineupSlots = (await leagueService.getConstants()).next_data.props.pageProps.page.config.constants.lineupSlots;
+
+    // get the position ids
+    let positions = [0,2,23,4,6];
+    if(position !== "all"){
+      positions = [lineupSlots.find(s => s.abbrev.toLowerCase() === position.toLowerCase()).id];
+    }
+
+    const topScorers = await leagueService.getTopScorersForWeek(leagueId, seasonId, scoringPeriodId, positions);
+
+    res.status(200).json({
+      data: topScorers
+    });
+    next();
+  } catch (err) {
+    next(err);
+  }
+}
+
 // Get the ESPN FFL constants via web-scrape
 exports.getConstants = async (req, res, next) => {
   try {

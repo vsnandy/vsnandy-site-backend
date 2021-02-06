@@ -76,6 +76,11 @@ router.get('/league/:leagueId/season/:seasonId/scoringPeriod/:scoringPeriodId/pl
   leagueController.getPlayerStatsForWeek(req, res, next);
 });
 
+// Get top players for a position
+router.get('/league/:leagueId/season/:seasonId/scoringPeriod/:scoringPeriodId/position/:position/topScorers', (req, res, next) => {
+  leagueController.getTopScorersForWeek(req, res, next);
+});
+
 // Try getting ESPN Constants via web scrape
 router.get('/web-constants', (req, res, next) => {
   leagueController.getConstants(req, res, next);

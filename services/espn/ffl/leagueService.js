@@ -202,6 +202,54 @@ exports.getPlayerStatsForWeek = async (leagueId, seasonId, scoringPeriodId, play
   }
 }
 
+// Get the top 50 scorers for a given week and positions
+exports.getTopScorersForWeek = async (leagueId, seasonId, scoringPeriodId, positionIds) => {
+  try {
+    const moreOptions = {
+      headers: {
+        ...options.headers,
+        "x-fantasy-filter": JSON.stringify({
+          "players": {
+            "filterSlotIds": {
+              "value": [...positionIds]
+            },
+            "sortPercOwned": {
+              "sortPriority": 3,
+              "sortAsc": false
+            },
+            "filterStatsForCurrentSeasonScoringPeriodId": {
+              "value": [scoringPeriodId]
+            },
+            "limit": 50,
+            "offset": 0,
+            "sortAppliedStatTotalForScoringPeriodId": {
+              "sortAsc": false,
+              "sortPriority": 1,
+              "value": scoringPeriodId
+            },
+            "filterRanksForScoringPeriodIds": {
+              "value": [scoringPeriodId]
+            }, 
+            "filterRanksForRankTypes": {
+              "value": ["STANDARD"]
+            },
+            "filterRanksForSlotIds": {
+              "value": [0,2,4,6,17,16]
+            }
+          }
+        })
+      }
+    }
+
+    const path = getFflPath(leagueId, seasonId);
+    const response = await axios.get(`${path}?view=kona_player_info`, moreOptions);
+
+    return response.data;
+  } catch (err) {
+    throw new ErrorHandler(400, 'Unable to get top scorers');
+  }
+}
+
 // Get ESPN FFL constants via web-scrape
 exports.getConstants = async () => {
   try {
