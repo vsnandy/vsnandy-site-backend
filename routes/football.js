@@ -1,3 +1,13 @@
+/**
+* DEPRECATED
+*
+* /routes/football.js
+*
+* @desription:: These route endpoints get called 
+* at /api/v1/football.
+*
+*/
+
 const express = require('express');
 const dotenv = require('dotenv');
 const fantasy = require('espn-fantasy-football-api/node');
