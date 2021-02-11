@@ -244,9 +244,137 @@ exports.getTopScorersForWeek = async (leagueId, seasonId, scoringPeriodId, posit
     const path = getFflPath(leagueId, seasonId);
     const response = await axios.get(`${path}?view=kona_player_info`, moreOptions);
 
-    return response.data;
+    // Add combined stats fields for ease of use in client-side app
+    const players = response.data.players.map(p => {
+      return {
+        ...p,
+        combinedStats: {
+          realStats: {
+            appliedTotal: 0,
+            stats: {}
+          },
+          projStats: {
+            appliedTotal: 0,
+            stats: {}
+          }
+        }
+      };
+    });
+
+    return {players, positionAgainstOpponent: response.data.positionAgainstOpponent};
   } catch (err) {
     throw new ErrorHandler(400, 'Unable to get top scorers');
+  }
+}
+
+// Get positional standings for a range of scoring periods
+exports.getTopScorersForWeeks = async (leagueId, seasonId, scoringPeriodIds, positionIds) => {
+  try {
+    const moreOptions = {
+      headers: {
+        ...options.headers,
+        "x-fantasy-filter": JSON.stringify({
+          "players": {
+            "filterSlotIds": {
+              "value": [...positionIds]
+            },
+            "filterStatsForCurrentSeasonScoringPeriodId": {
+              "value": [...scoringPeriodIds]
+            },
+            "limit": -1,
+            "offset": 0,
+            "filterRanksForScoringPeriodIds": {
+              "value": [...scoringPeriodIds]
+            }, 
+            "filterRanksForRankTypes": {
+              "value": ["STANDARD"]
+            },
+            "filterRanksForSlotIds": {
+              "value": [0,2,4,6,17,16]
+            }
+          }
+        })
+      }
+    }
+    //console.log(moreOptions);
+
+    const path = getFflPath(leagueId, seasonId);
+    const response = await axios.get(`${path}?view=kona_player_info`, moreOptions);
+
+    // reducer function to aggregate stats and points
+    const statsReducer = (acc, val) => {
+      const combinedStats = {...acc.stats};
+      for(const key in val.stats) {
+        if(key in combinedStats) {
+          combinedStats[key] += val.stats[key];
+        } else {
+          combinedStats[key] = val.stats[key];
+        }
+      }
+
+      return {
+        appliedTotal: acc.appliedTotal + val.appliedTotal,
+        stats: combinedStats
+      };
+    }
+
+    // Loop through all players and aggregate their points/stats for given week range (real and proj)
+    let players = response.data.players.map(p => {
+      let realStats = p.player.stats.filter(s => s.statSourceId === 0 && s.statSplitTypeId === 1);
+      let projStats = p.player.stats.filter(s => s.statSourceId === 1 && s.statSplitTypeId === 1);
+
+      // if no stats, assign 0
+      if(realStats.length === 0) {
+        realStats.push(
+          {
+            appliedTotal: 0,
+            stats: {}
+          }
+        );
+      }
+
+      if(projStats.length === 0) {
+        projStats.push(
+          {
+            appliedTotal: 0,
+            stats: {}
+          }
+        );
+      }
+
+      // only need appliedTotal and stats fields so loop through each stat
+      realStats = realStats.map(s => {
+        return {
+          appliedTotal: s.appliedTotal,
+          stats: s.stats
+        }
+      });
+
+      projStats = projStats.map(s => {
+        return {
+          appliedTotal: s.appliedTotal,
+          stats: s.stats
+        }
+      });
+
+      return {
+        ...p,
+        combinedStats: {
+          realStats: realStats.reduce(statsReducer),
+          projStats: projStats.reduce(statsReducer)
+        }
+      };
+    });
+
+    // Finally, sort (descending) the players by realStats.appliedTotal & return top 50
+    players = players.sort((a, b) => (
+      b.combinedStats.realStats.appliedTotal 
+      - a.combinedStats.realStats.appliedTotal
+    )).slice(0, 50);
+
+    return {players, positionAgainstOpponent: response.data.positionAgainstOpponent};
+  } catch (err) {
+    throw new ErrorHandler(400, 'Unable to get top scorers for given weeks.');
   }
 }
 
