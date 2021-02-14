@@ -246,23 +246,30 @@ exports.getTopScorersForWeek = async (leagueId, seasonId, scoringPeriodId, posit
 
     // Add combined stats fields for ease of use in client-side app
     const players = response.data.players.map(p => {
+      const real = p.player.stats.find(s => s.statSourceId === 0);
+      const proj = p.player.stats.find(s => s.statSourceId === 1);
+
+      const realStats = {
+        appliedTotal: real ? real.appliedTotal : 0,
+        stats: real ? real.stats : {}
+      };
+      const projStats = {
+        appliedTotal: proj ? proj.appliedTotal : 0,
+        stats: proj ? proj.stats : {}
+      };
+
       return {
         ...p,
         combinedStats: {
-          realStats: {
-            appliedTotal: 0,
-            stats: {}
-          },
-          projStats: {
-            appliedTotal: 0,
-            stats: {}
-          }
+          realStats,
+          projStats
         }
       };
     });
 
     return {players, positionAgainstOpponent: response.data.positionAgainstOpponent};
   } catch (err) {
+    console.log(err);
     throw new ErrorHandler(400, 'Unable to get top scorers');
   }
 }
