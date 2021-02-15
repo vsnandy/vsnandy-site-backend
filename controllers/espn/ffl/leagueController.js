@@ -203,12 +203,27 @@ exports.getTopScorersForWeeks = async (req, res, next) => {
 
     // choose all scoring periods between startWeek & endWeek, inclusive
     const scoringPeriods = [...Array(endWeek-startWeek+1).keys()].map(w => w + startWeek);
-    //console.log(scoringPeriods);
 
     const topScorers = await leagueService.getTopScorersForWeeks(leagueId, seasonId, scoringPeriods, positions);
 
     res.status(200).json({
       data: topScorers
+    });
+    next();
+  } catch (err) {
+    next(err);
+  }
+}
+
+// Get pro team schedules for given season
+exports.getProTeamSchedules = async (req, res, next) => {
+  const { seasonId } = req.params;
+
+  try {
+    const schedules = await leagueService.getProTeamSchedules(seasonId);
+
+    res.status(200).json({
+      data: schedules
     });
     next();
   } catch (err) {
@@ -230,5 +245,3 @@ exports.getConstants = async (req, res, next) => {
     next(err);
   }
 }
-
-
