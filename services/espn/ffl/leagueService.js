@@ -11,7 +11,7 @@ const axios = require('axios');
 const htmlParser = require('node-html-parser');
 
 const { ErrorHandler } = require('../../../utils/error.js');
-const { getFflPath } = require('../../../utils/helper.js');
+const { getFflPath, convertEpochToCST, formatDate } = require('../../../utils/helper.js');
 
 dotenv.config(); // get the environment variables
 
@@ -557,6 +557,26 @@ export const getProTeamSchedules = async (seasonId) => {
     return response.data;
   } catch (err) {
     throw new ErrorHandler(400, `Unable to get pro team schedules for ${seasonId}`);
+  }
+}
+
+// Get an NFL game by proTeamId and scoringPeriodId
+exports.getProGame = async (seasonId, proTeamId, scoringPeriodId) => {
+  try {
+    const schedules = await getProTeamSchedules(seasonId); // get proTeamSchedules
+    const team = schedules.settings.proTeams.find(t => t.id === Number(proTeamId)); // Grab team
+    const game = team.proGamesByScoringPeriod[scoringPeriodId][0]; // Grab team game for scoring period
+    const date = convertEpochToCST(game.date); // convert the epoch game date to CST
+    const formatted = formatDate(date); // get the date in yyyymmdd format
+
+    // call the espn api to get the game event details for the given date
+    const response = await axios.get(`https://site.api.espn.com/apis/fantasy/v2/games/ffl/games?useMap=true&dates=${formatted}&pbpOnly=True`)
+
+    // filter games to the game id
+    const event = response.data.events.find(e => e.id === game.id.toString());
+    return event;
+  } catch (err) {
+    throw new ErrorHandler(400, 'Unable to get pro game');
   }
 }
 

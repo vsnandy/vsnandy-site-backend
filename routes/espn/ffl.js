@@ -91,6 +91,11 @@ router.get('/season/:seasonId/proTeamSchedules', (req, res, next) => {
   leagueController.getProTeamSchedules(req, res, next);
 });
 
+// Get an NFL game by game id
+router.get('/season/:seasonId/proTeam/:proTeamId/scoringPeriod/:scoringPeriodId/game', (req, res, next) => {
+  leagueController.getProGame(req, res, next);
+});
+
 // Try getting ESPN Constants via web scrape
 router.get('/web-constants', (req, res, next) => {
   leagueController.getConstants(req, res, next);

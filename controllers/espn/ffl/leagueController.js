@@ -231,6 +231,21 @@ exports.getProTeamSchedules = async (req, res, next) => {
   }
 }
 
+// Get an NFL game by id
+exports.getProGame = async (req, res, next) => {
+  const { seasonId, proTeamId, scoringPeriodId } = req.params;
+  try {
+    const game = await leagueService.getProGame(seasonId, proTeamId, scoringPeriodId);
+
+    res.status(200).json({
+      data: game
+    });
+    next();
+  } catch (err) {
+    next(err);
+  }
+}
+
 // Get the ESPN FFL constants via web-scrape
 exports.getConstants = async (req, res, next) => {
   try {
