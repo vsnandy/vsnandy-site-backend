@@ -273,7 +273,11 @@ exports.getTopScorersForWeek = async (leagueId, seasonId, scoringPeriodId, posit
         const game = team.proGamesByScoringPeriod[scoringPeriodId.toString()][0];
 
         // Get the player's positionalRatings (may be undefined)
-        const positionalRatings = response.data.positionAgainstOpponent.positionalRatings[p.player.defaultPositionId.toString()];
+        // Positional rankings are only for 2019+
+        const positionalRatings = 
+          seasonId > 2018
+          ? response.data.positionAgainstOpponent.positionalRatings[p.player.defaultPositionId.toString()]
+          : null;
         
         if(game.awayProTeamId === team.id) {
           // opp is the home team
@@ -482,8 +486,12 @@ exports.getTopScorersForWeeks = async (leagueId, seasonId, scoringPeriodIds, pos
           });
         }
 
+        // Only available for 2019+
         // Grab the player's positionalratings based off defaultpositionid (may be undefined)
-        const positionalRatings = response.data.positionAgainstOpponent.positionalRatings[p.player.defaultPositionId.toString()];
+        const positionalRatings = 
+          seasonId > 2018
+          ? response.data.positionAgainstOpponent.positionalRatings[p.player.defaultPositionId.toString()]
+          : null;
 
         if(g.game.awayProTeamId === g.teamId) {
           // opp is the home team
