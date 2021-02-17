@@ -246,7 +246,7 @@ exports.getTopScorersForWeek = async (leagueId, seasonId, scoringPeriodId, posit
     const schedules = await getProTeamSchedules(seasonId);
 
     // Add combined stats fields for ease of use in client-side app
-    const players = response.data.players.map(p => {
+    const players = await Promise.all(response.data.players.map(async p => {
       const real = p.player.stats.find(s => s.statSourceId === 0);
       const proj = p.player.stats.find(s => s.statSourceId === 1);
 
@@ -279,6 +279,8 @@ exports.getTopScorersForWeek = async (leagueId, seasonId, scoringPeriodId, posit
           ? response.data.positionAgainstOpponent.positionalRatings[p.player.defaultPositionId.toString()]
           : null;
         
+        // Get the nfl game details
+        const event = await getProGame(seasonId, team.id, game.scoringPeriodId);
         if(game.awayProTeamId === team.id) {
           // opp is the home team
           opp.push({
@@ -291,7 +293,8 @@ exports.getTopScorersForWeek = async (leagueId, seasonId, scoringPeriodId, posit
                       : {
                         average: 0,
                         rank: 0
-                      }
+            },
+            event: event
           });
         } else {
           opp.push({
@@ -304,7 +307,8 @@ exports.getTopScorersForWeek = async (leagueId, seasonId, scoringPeriodId, posit
                       : {
                         average: 0,
                         rank: 0
-                      }
+            },
+            event: event
           });
         }
       } else {
@@ -314,7 +318,8 @@ exports.getTopScorersForWeek = async (leagueId, seasonId, scoringPeriodId, posit
           posRank: {
             average: 0,
             rank: 0
-          }
+          },
+          event: [],
         });
       }
 
@@ -330,8 +335,9 @@ exports.getTopScorersForWeek = async (leagueId, seasonId, scoringPeriodId, posit
           }
         }
       };
-    });
-
+    }));
+    //console.log(positionIds[0], ":", players.length);
+    //console.log("DONE");
     return {players};
   } catch (err) {
     console.log(err);
@@ -561,8 +567,9 @@ export const getProTeamSchedules = async (seasonId) => {
 }
 
 // Get an NFL game by proTeamId and scoringPeriodId
-exports.getProGame = async (seasonId, proTeamId, scoringPeriodId) => {
+export const getProGame = async (seasonId, proTeamId, scoringPeriodId) => {
   try {
+    //console.log("Getting pro game");
     const schedules = await getProTeamSchedules(seasonId); // get proTeamSchedules
     const team = schedules.settings.proTeams.find(t => t.id === Number(proTeamId)); // Grab team
     const game = team.proGamesByScoringPeriod[scoringPeriodId][0]; // Grab team game for scoring period
@@ -570,13 +577,24 @@ exports.getProGame = async (seasonId, proTeamId, scoringPeriodId) => {
     const formatted = formatDate(date); // get the date in yyyymmdd format
 
     // call the espn api to get the game event details for the given date
-    const response = await axios.get(`https://site.api.espn.com/apis/fantasy/v2/games/ffl/games?useMap=true&dates=${formatted}&pbpOnly=True`)
+    const response = await axios.get(`https://site.api.espn.com/apis/fantasy/v2/games/ffl/games?useMap=true&dates=${formatted}&pbpOnly=True`);
 
     // filter games to the game id
     const event = response.data.events.find(e => e.id === game.id.toString());
-    return event;
+    return event.competitors;
   } catch (err) {
     throw new ErrorHandler(400, 'Unable to get pro game');
+  }
+}
+
+// Get NFL Games for Week
+exports.getNFLGamesForWeek = async (seasonId, scoringPeriodId) => {
+  try {
+    const response = await axios.get(`https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?lang=en&region=us&calendartype=blacklist&limit=100&showAirings=true&dates=${seasonId}&seasontype=2&week=${scoringPeriodId}`);
+
+    return response.data.events;
+  } catch (err) {
+    throw new ErrorHandler(400, `Unable to get ${seasonId} NFL Games for week ${scoringPeriodId}`);
   }
 }
 

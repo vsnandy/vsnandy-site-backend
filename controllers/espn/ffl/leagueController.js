@@ -246,6 +246,22 @@ exports.getProGame = async (req, res, next) => {
   }
 }
 
+// Get NFL Games for week
+exports.getNFLGamesForWeek = async (req, res, next) => {
+  const { seasonId, scoringPeriodId } = req.params;
+  //console.log(seasonId, scoringPeriodId);
+  try {
+    const games = await leagueService.getNFLGamesForWeek(seasonId, scoringPeriodId);
+
+    res.status(200).json({
+      data: games
+    });
+    next();
+  } catch (err) {
+    next(err);
+  }
+}
+
 // Get the ESPN FFL constants via web-scrape
 exports.getConstants = async (req, res, next) => {
   try {
