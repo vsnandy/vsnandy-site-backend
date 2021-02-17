@@ -76,9 +76,29 @@ router.get('/league/:leagueId/season/:seasonId/scoringPeriod/:scoringPeriodId/pl
   leagueController.getPlayerStatsForWeek(req, res, next);
 });
 
-// Get top players for a position
+// Get top players at a position for a given week
 router.get('/league/:leagueId/season/:seasonId/scoringPeriod/:scoringPeriodId/position/:position/topScorers', (req, res, next) => {
   leagueController.getTopScorersForWeek(req, res, next);
+});
+
+// Get top players at a position for a range of weeks
+router.get('/league/:leagueId/season/:seasonId/startWeek/:startWeek/endWeek/:endWeek/position/:position/topScorers', (req, res, next) => {
+  leagueController.getTopScorersForWeeks(req, res, next);
+});
+
+// Get pro team schedules for given season
+router.get('/season/:seasonId/proTeamSchedules', (req, res, next) => {
+  leagueController.getProTeamSchedules(req, res, next);
+});
+
+// Get an NFL game by game id
+router.get('/season/:seasonId/proTeam/:proTeamId/scoringPeriod/:scoringPeriodId/game', (req, res, next) => {
+  leagueController.getProGame(req, res, next);
+});
+
+// Get NFL Games for week
+router.get('/season/:seasonId/scoringPeriod/:scoringPeriodId/games', (req, res, next) => {
+  leagueController.getNFLGamesForWeek(req, res, next);
 });
 
 // Try getting ESPN Constants via web scrape
