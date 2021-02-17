@@ -246,7 +246,7 @@ exports.getTopScorersForWeek = async (leagueId, seasonId, scoringPeriodId, posit
     const schedules = await getProTeamSchedules(seasonId);
 
     // Add combined stats fields for ease of use in client-side app
-    const players = await Promise.all(response.data.players.map(async p => {
+    const players = response.data.players.map(p => {
       const real = p.player.stats.find(s => s.statSourceId === 0);
       const proj = p.player.stats.find(s => s.statSourceId === 1);
 
@@ -280,10 +280,10 @@ exports.getTopScorersForWeek = async (leagueId, seasonId, scoringPeriodId, posit
           : null;
         
         // Get the nfl game details
-        const event = await getProGame(seasonId, team.id, game.scoringPeriodId);
         if(game.awayProTeamId === team.id) {
           // opp is the home team
           opp.push({
+            gameId: game.id,
             playerTeamId: team.id,
             oppTeamId: game.homeProTeamId,
             scoringPeriodId: game.scoringPeriodId,
@@ -294,10 +294,10 @@ exports.getTopScorersForWeek = async (leagueId, seasonId, scoringPeriodId, posit
                         average: 0,
                         rank: 0
             },
-            event: event
           });
         } else {
           opp.push({
+            gameId: game.id,
             playerTeamId: team.id,
             oppTeamId: game.awayProTeamId,
             scoringPeriodId: game.scoringPeriodId,
@@ -308,18 +308,17 @@ exports.getTopScorersForWeek = async (leagueId, seasonId, scoringPeriodId, posit
                         average: 0,
                         rank: 0
             },
-            event: event
           });
         }
       } else {
         opp.push({
+          gameId: 0,
           oppTeamId: 0,
           loc: 'home',
           posRank: {
             average: 0,
             rank: 0
           },
-          event: [],
         });
       }
 
@@ -335,9 +334,7 @@ exports.getTopScorersForWeek = async (leagueId, seasonId, scoringPeriodId, posit
           }
         }
       };
-    }));
-    //console.log(positionIds[0], ":", players.length);
-    //console.log("DONE");
+    });
     return {players};
   } catch (err) {
     console.log(err);
