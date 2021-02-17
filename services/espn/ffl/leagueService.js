@@ -553,7 +553,7 @@ exports.getTopScorersForWeeks = async (leagueId, seasonId, scoringPeriodIds, pos
 }
 
 // Get the pro teams schedules for given season
-export const getProTeamSchedules = async (seasonId) => {
+const getProTeamSchedules = async (seasonId) => {
   try {
     const response = await axios.get(`https://fantasy.espn.com/apis/v3/games/ffl/seasons/${seasonId}?view=proTeamSchedules_wl`);
 
@@ -563,8 +563,10 @@ export const getProTeamSchedules = async (seasonId) => {
   }
 }
 
+exports.getProTeamSchedules = getProTeamSchedules;
+
 // Get an NFL game by proTeamId and scoringPeriodId
-export const getProGame = async (seasonId, proTeamId, scoringPeriodId) => {
+const getProGame = async (seasonId, proTeamId, scoringPeriodId) => {
   try {
     //console.log("Getting pro game");
     const schedules = await getProTeamSchedules(seasonId); // get proTeamSchedules
@@ -583,6 +585,8 @@ export const getProGame = async (seasonId, proTeamId, scoringPeriodId) => {
     throw new ErrorHandler(400, 'Unable to get pro game');
   }
 }
+
+exports.getProGame = getProGame;
 
 // Get NFL Games for Week
 exports.getNFLGamesForWeek = async (seasonId, scoringPeriodId) => {
@@ -616,4 +620,3 @@ exports.getConstants = async () => {
     throw new ErrorHandler(400, 'Unable to get constants from ESPN');
   }
 }
-
