@@ -1,7 +1,7 @@
 /**
 * /controllers/nba/nbaController.js
 *
-* @description:: Controller for generic league info.
+* @description:: Controller for NBA info.
 * Passes data from the service to the route.
 *
 */
