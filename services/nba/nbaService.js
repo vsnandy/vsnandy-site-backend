@@ -18,11 +18,12 @@ exports.getPlayerDetails = (playerName, callback) => {
       'player_details', // python function to use
       playerName // parameter
     ]);
-    let response = {};
+
+    let response = '';
 
     process.stdout.on('data', (data) => {
-      //console.log(data.toString())
-      response = JSON.parse(data.toString());
+      //console.log(data)
+      response += data.toString();
     });
 
     process.stderr.on('data', (data) => {
@@ -35,5 +36,33 @@ exports.getPlayerDetails = (playerName, callback) => {
     });
   } catch(err) {
     throw new ErrorHandler(400, 'Unable to get player details.');
+  }
+}
+
+// Get the league leaders
+exports.getLeagueLeaders = (statCategory, callback) => {
+  try {
+    //console.log(statCategory);
+    let process = spawn('python', [
+      './services/nba/scripts/nba.py',
+      'league_leaders', // python function to use
+      statCategory // parameter
+    ]);
+    let response = '';
+
+    process.stdout.on('data', (data) => {
+      response += data.toString();
+    });
+
+    process.stderr.on('data', (data) => {
+      console.error(`stderr: ${data}`);
+    });
+
+    process.on('close', (code) => {
+      console.log(`child process exited with code ${code}`);
+      return callback(response);
+    });
+  } catch(err) {
+    throw new ErrorHandler(400, 'Unable to get league leaders.');
   }
 }

@@ -1,29 +1,8 @@
 import pandas as pd
 import sys
-from nba_api.stats.endpoints import commonallplayers
+from nba_api.stats.endpoints import commonallplayers, leagueleaders
+from nba_api.stats.static import teams
 import json
-
-###############
-## Functions ##
-###############
-
-# Get player details
-def get_player_details(args):
-    player_name = args[0]
-    all_players = commonallplayers.CommonAllPlayers(headers=custom_headers).get_dict()['resultSets'][0]
-    for player in all_players['rowSet']:
-        if player[2] == player_name:
-            print(player[0])
-            sys.stdout.flush()
-            return
-
-    print(-1)
-    sys.stdout.flush()
-    return
-
-###############
-## Variables ##
-###############
 
 custom_headers = {
     'Host': 'stats.nba.com',
@@ -37,10 +16,52 @@ custom_headers = {
     'x-nba-stats-token': 'true'
 }
 
+###################
+## Helper Methods #
+###################
+
+# Get Team ID from full name
+def get_team_id(team_name):
+    for team in teams.get_teams():
+        if team['full_name'].lower() == team_name.lower():
+            return team['id']
+    return -1
+
+# Get Player ID from full name
+def get_player_id(player_name):
+    all_players = commonallplayers.CommonAllPlayers(headers=custom_headers).get_dict()['resultSets'][0]
+    for player in all_players['rowSet']:
+        if player[2].lower() == player_name.lower():
+            return player[0]
+    return -1
+
+###############
+## Functions ##
+###############
+
+# Get player details
+def get_player_details(args):
+    player_id = get_player_id(args[0])
+    print(player_id)
+    sys.stdout.flush()
+    return
+
+# Get league leaders for specified stat category
+def get_league_leaders(args):
+    leaders = leagueleaders.LeagueLeaders(headers=custom_headers, stat_category_abbreviation=args[0])
+    print(leaders.get_json())
+    sys.stdout.flush()
+    return
+
+###############
+## Variables ##
+###############
+
 # Dispatch Dictionary
 # TODO: add new API call methods here
 dispatch = {
     'player_details': get_player_details,
+    'league_leaders': get_league_leaders,
 }
 
 ############
