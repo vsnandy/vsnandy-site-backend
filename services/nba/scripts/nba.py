@@ -29,7 +29,7 @@ def get_team_id(team_name):
 
 # Get Player ID from full name
 def get_player_id(player_name):
-    all_players = commonallplayers.CommonAllPlayers(headers=custom_headers).get_dict()['resultSets'][0]
+    all_players = commonallplayers.CommonAllPlayers(headers=custom_headers, timeout=100).get_dict()['resultSets'][0]
     for player in all_players['rowSet']:
         if player[2].lower() == player_name.lower():
             return player[0]
@@ -48,7 +48,7 @@ def get_player_details(args):
 
 # Get league leaders for specified stat category
 def get_league_leaders(args):
-    leaders = leagueleaders.LeagueLeaders(headers=custom_headers, stat_category_abbreviation=args[0])
+    leaders = leagueleaders.LeagueLeaders(headers=custom_headers, stat_category_abbreviation=args[0], timeout=100)
     print(leaders.get_json())
     sys.stdout.flush()
     return
