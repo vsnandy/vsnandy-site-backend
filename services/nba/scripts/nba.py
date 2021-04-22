@@ -29,8 +29,8 @@ def get_team_id(team_name):
 
 # Get Player ID from full name
 def get_player_id(player_name):
-    all_players = commonallplayers.CommonAllPlayers(headers=custom_headers, timeout=100).get_dict()['resultSets'][0]
-    for player in all_players['rowSet']:
+    all_players = commonallplayers.CommonAllPlayers(headers=custom_headers, timeout=100)
+    for player in all_players.get_dict()['resultSets'][0]['rowSet']:
         if player[2].lower() == player_name.lower():
             return player[0]
     return -1
